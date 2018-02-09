@@ -20,7 +20,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-include_directories(include/serial_asio)
+include_directories(src)
 
 add_library(serial_api src/serial_api.cpp)
 

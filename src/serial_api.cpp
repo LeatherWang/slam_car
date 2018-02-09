@@ -6,28 +6,43 @@
 #define BYTE2(dwTemp)       ( *( (uchar *)(&dwTemp) + 2) )
 #define BYTE3(dwTemp)       ( *( (uchar *)(&dwTemp) + 3) )
 
-UnionInt_ union_data_int;
-UnionFloat_ union_data_float;
-
-void init_serial(const std::string &device)
+SerialPortAPI::SerialPortAPI(const string &port_name)
 {
-    sp.open(device);
-    sp.set_option(serial_port::baud_rate(115200));
-    sp.set_option(serial_port::flow_control());
-    sp.set_option(serial_port::parity());
-    sp.set_option(serial_port::stop_bits());
-    sp.set_option(serial_port::character_size(8));
+    p_serial_port = new serial_port(m_iosev);
+    if (p_serial_port){
+        this->init_serial(port_name);
+    }
+
+    uchar length = getArrayLen(this->is_pos_recvived);
+    for(uchar i=0; i<length; i++){
+        this->is_pos_recvived[i] = false;
+    }
 }
 
-void decode_serial_data(uchar *data, uchar num)
+SerialPortAPI::~SerialPortAPI()
+{
+    if (p_serial_port){
+        delete p_serial_port;
+    }
+}
+
+void SerialPortAPI::init_serial(const std::string &device)
+{
+    p_serial_port->open(device);
+    p_serial_port->set_option(serial_port::baud_rate(115200));
+    p_serial_port->set_option(serial_port::flow_control());
+    p_serial_port->set_option(serial_port::parity());
+    p_serial_port->set_option(serial_port::stop_bits());
+    p_serial_port->set_option(serial_port::character_size(8));
+}
+
+void SerialPortAPI::decode_serial_data(uchar *data, uchar num)
 {
     uchar sum = 0;
-    ushort position_x, position_y;
-    float rotation_z;
     for(uchar i=0;i<(num-1);i++)
         sum += (uchar(data[i]));
-    if(!(sum == uchar(data[num-1])))	return;		//判断sum，校验--Leather
-    if(!(uchar(data[0])==0xAA && uchar(data[1])==0xAF))		return;		//判断帧头--Leather
+    if(!(sum == uchar(data[num-1])))	return;
+    if(!(uchar(data[0])==0xAA && uchar(data[1])==0xAF))		return;
 
     if(uchar(data[2]) == 0X01){
         union_data_int.son[1] = uchar(data[4]);
@@ -44,13 +59,15 @@ void decode_serial_data(uchar *data, uchar num)
         union_data_float.son[0] = uchar(data[11]);
         rotation_z = union_data_int.sum;
 
-        cout<<"x:"<<position_x<<"y:"<<position_y<<"z:"<<rotation_z<<endl;
+        this->is_pos_recvived[data[2]] = true; //标志位
+
+        //cout<<"x:"<<position_x<<"y:"<<position_y<<"z:"<<rotation_z<<endl;
     }
 }
 
 uchar RxState = 0;
 uchar RxBuffer[256];
-void check_serial_data(uchar com_data)
+void SerialPortAPI::check_serial_data(uchar com_data)
 {
     static uchar _data_len = 0,_data_cnt = 0;
     if(RxState==0&&com_data==0xAA){
@@ -86,8 +103,16 @@ void check_serial_data(uchar com_data)
         RxState = 0;
 }
 
+void SerialPortAPI::read_from_serial(uchar *buf)
+{
+    uchar ch;
+    read(*p_serial_port, buffer(buf,1));
+    ch=buf[0];
+    check_serial_data(ch);
+}
+
 char array[50];
-void write_to_serial(short posionX, short posionY, float positionZ, uchar flag)
+void SerialPortAPI::write_to_serial(short posionX, short posionY, float positionZ, uchar flag)
 {
     uchar _cnt=0;
     uchar i=0;
@@ -115,7 +140,14 @@ void write_to_serial(short posionX, short posionY, float positionZ, uchar flag)
 
     array[_cnt++]=sum;
 
-    if(sp.is_open()){
-        write(sp, buffer(array, _cnt));
+    if(p_serial_port->is_open()){
+        write(*p_serial_port, buffer(array, _cnt));
     }
 }
+
+bool SerialPortAPI::is_opened()
+{
+    return p_serial_port->is_open();
+}
+
+
