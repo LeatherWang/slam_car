@@ -20,8 +20,14 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(serial_asio src/serial_asio.cpp)
-target_link_libraries(serial_asio ${catkin_LIBRARIES})
+include_directories(include/serial_asio)
+
+add_library(serial_api src/serial_api.cpp)
+
+add_executable(serial_asio src/serial_asio.cpp )
+target_link_libraries(serial_asio
+    ${catkin_LIBRARIES}
+    serial_api)
 
 
 
