@@ -6,82 +6,93 @@
 #include <math.h>
 #include "std_msgs/String.h"
 #include "serial_api.h"
+#include "slam_car/pc_to_stm.h"
+#include "slam_car/stm_to_pc.h"
+#include <exception>
+#include "color.h"
 
-SerialPortAPI *sp_api;
-
-void *handle_receive_serial_data(void *)
+class Serial_Asio
 {
-    unsigned char buf[1];
-    while(1){
-        sp_api->read_from_serial(buf);
+public:
+    Serial_Asio();
+    ~Serial_Asio(){}
+    void spin();
+    void handle_receive_serial_data();
 
-        if(sp_api->is_pos_recvived[1]){
-            sp_api->is_pos_recvived[1] = false;
+private:
+    ros::NodeHandle nh;
+    SerialPortAPI *sp_api;
+    ros::Publisher pub_stm_data;
+    ros::Subscriber sub_set_motor;
 
-            //string str(&buf[0],&buf[1]);
-            std_msgs::String msg;
-            std::stringstream ss;
-            ss<<sp_api->position_x<<","<<sp_api->position_y;
-            msg.data = ss.str();
-            ROS_INFO("%s", msg.data.c_str());
+    const static int rate=200; //读取里程计频率
+    void set_motor_callback(const slam_car::pc_to_stm &msg);
+};
+
+Serial_Asio::Serial_Asio()
+{
+    std::string serial_dev="/dev/ttyUSB0";
+
+    /** @todo*/
+    ros::NodeHandle n_private("~");
+    n_private.param<std::string>("serial_dev", serial_dev, "/dev/ttyUSB0");
+    try
+    {
+        sp_api = new SerialPortAPI(serial_dev);
+        if(sp_api->is_opened()){
+            cout<<FGRN("[SUCCESS:] ")<<"open the serial port: "<<serial_dev<<endl;
         }
     }
-    std::cout<<"thread halt!!!"<<endl;
+    catch(exception e)
+    {
+        cout<<FRED("[ERROR:] ")<<"can't open the serial port : "<<serial_dev<<endl;
+        exit(-1);
+    }
+
+    pub_stm_data = nh.advertise<slam_car::stm_to_pc>("odomtry_from_stm", 1000);
+    sub_set_motor = nh.subscribe("stm_motor", 100, &Serial_Asio::set_motor_callback, this);
+    sp_api->start_read_serial_thread();
 }
 
-void write_callback(const std_msgs::String::ConstPtr& msg)
+//Spin function
+void Serial_Asio::spin()
 {
-    ROS_INFO_STREAM("Writing to serial port" << msg->data);
-    if(sp_api->is_opened()){
-        sp_api->write_to_serial(1,1,1,1);
+    ros::Rate loop_rate(rate);
+    while(ros::ok())
+    {
+        handle_receive_serial_data();
+        ros::spinOnce();
+        loop_rate.sleep();
     }
+}
+
+void Serial_Asio::handle_receive_serial_data()
+{
+    if(sp_api->get_and_clear_receive_flag(FlagPose))
+    {
+        slam_car::stm_to_pc stm_data;
+        stm_data.header.stamp = ros::Time::now();
+        stm_data.header.frame_id = "odom_to_pc";
+        stm_data.coord_x_to_pc = sp_api->position_x;
+        stm_data.coord_y_to_pc = sp_api->position_y;
+        stm_data.z_angle_to_pc = sp_api->rotation_z;
+
+        stm_data.velocity_vth_to_pc = sp_api->velocity_th;
+        pub_stm_data.publish(stm_data);
+    }
+}
+
+void Serial_Asio::set_motor_callback(const slam_car::pc_to_stm &msg)
+{
+    slam_car::pc_to_stm msg_temp = msg;
+    std::cout<<msg_temp.vel_x_to_stm<<" "<<msg_temp.z_angle_vel_to_stm<<std::endl;
+    sp_api->set_velocity_to_stm(msg_temp.vel_x_to_stm, msg_temp.z_angle_vel_to_stm, FlagVel);
 }
 
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "serial_asio");
-    ros::NodeHandle n;
-
-    std::string serial_dev;
-    n.param<std::string>("serial_dev", serial_dev, "/dev/ttyUSB0");
-    ros::Publisher read_pub = n.advertise<std_msgs::String>("serial_raw", 1000);
-    ros::Subscriber write_sub = n.subscribe("serial_write", 1000, write_callback);
-    ros::Rate loop_rate(1);
-
-    sp_api = new SerialPortAPI(serial_dev);
-    if(!sp_api->is_opened()){
-        ROS_INFO("error to serial successfully!!!");
-        exit(-1);
-    }
-
-    pthread_t thread_serial;
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    int rc = pthread_create(&thread_serial, &attr, handle_receive_serial_data, NULL); //串口接收线程
-    if(rc){
-        printf("ERROR; return code from pthread_create() is %d\n", rc);
-        exit(-1);
-    }
-
-    while (ros::ok()) {
-        sp_api->write_to_serial(10,11,12.1,1);
-        ros::spinOnce();
-        loop_rate.sleep();
-    }
-    //iosev.run();
-
-    pthread_attr_destroy(&attr);//Free attribute
-    std::cout<<"process halt!!!"<<endl;
+    Serial_Asio serial_asio_obj;
+    serial_asio_obj.spin();
     return 0; //相当于_exit()，导致进程及其所有线程退出
 }
-
-
-
-
-
-
-
-
-
-

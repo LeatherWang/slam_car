@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<package format="2">
-  <name>serial_asio</name>
+<package>
+  <name>slam_car</name>
   <version>0.0.0</version>
   <description>The serial_asio package</description>
 
@@ -48,17 +48,23 @@
   <!--   <test_depend>gtest</test_depend> -->
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_export_depend>roscpp</build_export_depend>
-  <build_export_depend>rospy</build_export_depend>
-  <build_export_depend>std_msgs</build_export_depend>
-  <exec_depend>roscpp</exec_depend>
-  <exec_depend>rospy</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
 
+<buildtool_depend>catkin</buildtool_depend>
+<build_depend>roscpp</build_depend>
+<build_depend>rospy</build_depend>
+<build_depend>std_msgs</build_depend>
+<build_depend>message_generation</build_depend>
+<build_depend>tf</build_depend>
+<build_depend>cv_bridge</build_depend>
+<build_depend>message_filters</build_depend>
+
+<run_depend>roscpp</run_depend>
+<run_depend>rospy</run_depend>
+<run_depend>std_msgs</run_depend>
+<run_depend>message_runtime</run_depend>
+<run_depend>tf</run_depend>
+<run_depend>cv_bridge</run_depend>
+<run_depend>message_filters</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
