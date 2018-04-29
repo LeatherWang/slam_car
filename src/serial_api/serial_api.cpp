@@ -1,6 +1,9 @@
 
 #include "serial_api.h"
 
+namespace slam_car
+{
+
 #define BYTE0(dwTemp)       ( *( (uchar *)(&dwTemp)	) )
 #define BYTE1(dwTemp)       ( *( (uchar *)(&dwTemp) + 1) )
 #define BYTE2(dwTemp)       ( *( (uchar *)(&dwTemp) + 2) )
@@ -120,6 +123,53 @@ void SerialPortAPI::check_serial_data(uchar com_data)
         RxState = 0;
 }
 
+void SerialPortAPI::odom_raw_data_decode(uint8_t com_data)
+{
+    static uint8_t count = 0;
+    static uint8_t i = 0;
+    unsigned int x_t;
+
+    static union
+    {
+        uint8_t data[24];
+        float   ActVal[6];
+    }posture;
+
+    if(count==0 && com_data==0x0D)
+    {
+        count++;
+        x_t = (unsigned int)count;
+        cout << x_t<<" ";
+    }
+    else if(count == 1 && com_data==0x0a)
+    {
+        i=0;
+        count++;
+    }
+    else if(count == 2)
+    {
+        posture.data[i]=com_data;
+        i++;
+        if(i>=24)
+        {
+            i=0;
+            count++;
+        }
+    }
+    else if(count == 3 && com_data==0x0a)
+        count++;
+    else if(count == 4 && com_data==0x0d)
+    {
+        position_x = posture.ActVal[3];
+        position_y = posture.ActVal[4];
+        rotation_z = posture.ActVal[0];
+        velocity_th = posture.ActVal[5];
+        set_receive_flag(FlagPose);
+    }
+    else
+        count=0;
+}
+
 /**
 * @brief 核对串口数据帧是否正确
 * @bug   一次只能读取一个字节的数据
@@ -134,7 +184,12 @@ void * SerialPortAPI::read_from_serial(void *__this)
     {
         read(*_this->p_serial_port, buffer(buf));
         ch=buf[0];
-        _this->check_serial_data(ch);
+
+        #ifdef USE_ODOM_RAW
+            _this->odom_raw_data_decode(ch);
+        #else
+            _this->check_serial_data(ch);
+        #endif
     }
 }
 
@@ -214,6 +269,7 @@ bool SerialPortAPI::get_and_clear_receive_flag(Receive_Flag_ index)
     pthread_mutex_unlock(&mutex);
 }
 
+} //namespace
 
 
 

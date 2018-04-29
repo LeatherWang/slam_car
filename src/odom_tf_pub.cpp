@@ -7,6 +7,9 @@
 #include "std_msgs/String.h"
 #include "std_msgs/Int64.h"
 
+namespace slam_car
+{
+
 class Sub_Odom_Pub
 {
 public:
@@ -181,6 +184,9 @@ void Sub_Odom_Pub::callback(const slam_car::stm_to_pc &msg)
     last_time_for_calVel = current_time_for_calVel;
 }
 
+} //namespace
+
+using namespace slam_car;
 int main(int argc,char **argv)
 {
     ros::init(argc,argv,"odom_tf_pub");

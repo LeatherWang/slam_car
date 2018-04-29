@@ -11,6 +11,9 @@
 #include <exception>
 #include "color.h"
 
+namespace slam_car
+{
+
 class Serial_Asio
 {
 public:
@@ -89,10 +92,28 @@ void Serial_Asio::set_motor_callback(const slam_car::pc_to_stm &msg)
     sp_api->set_velocity_to_stm(msg_temp.vel_x_to_stm, msg_temp.z_angle_vel_to_stm, FlagVel);
 }
 
+} //namespace
+
+using namespace slam_car;
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "serial_asio");
-    Serial_Asio serial_asio_obj;
+    slam_car::Serial_Asio serial_asio_obj;
     serial_asio_obj.spin();
     return 0; //相当于_exit()，导致进程及其所有线程退出
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

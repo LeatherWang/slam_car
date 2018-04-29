@@ -23,7 +23,7 @@ typedef unsigned char uchar;
 typedef unsigned short ushort;
 
 #define FLAG_SIZE 5
-
+//#define USE_ODOM_RAW
 typedef enum{
     FlagVel=0,
     FlagPose,
@@ -41,6 +41,9 @@ typedef union{
     uint8_t data[4];
     int32_t vel;
 } UnionInt_;
+
+namespace slam_car
+{
 
 class SerialPortAPI
 {
@@ -66,6 +69,7 @@ private:
     bool send_data_to_stm(uchar *bufferArray, uchar num);
     // read serial data
     static void *read_from_serial(void *__this);
+    void odom_raw_data_decode(uint8_t com_data);
 
 public:
     float position_x, position_y, rotation_z, velocity_th;
@@ -82,4 +86,5 @@ private:
 
     pthread_mutex_t mutex;
 };
+}//namespace
 #endif
