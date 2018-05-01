@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_filters
 )
 
-find_package(OpenCV 2.4 REQUIRED)
+find_package(OpenCV REQUIRED)
 
 add_message_files(
    FILES
@@ -96,6 +96,7 @@ target_link_libraries(odom_tf_pub
 add_executable(sample_data ./src/sample_data.cpp )
 target_link_libraries(sample_data
     ${catkin_LIBRARIES}
+    ${OpenCV_LIBRARIES}
 )
 
 add_executable(diff_drive_controller ./src/diff_drive_controller.cpp )

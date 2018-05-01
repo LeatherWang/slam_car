@@ -18,7 +18,7 @@ class Serial_Asio
 {
 public:
     Serial_Asio();
-    ~Serial_Asio(){}
+    ~Serial_Asio();
     void spin();
     void handle_receive_serial_data();
 
@@ -55,6 +55,15 @@ Serial_Asio::Serial_Asio()
     pub_stm_data = nh.advertise<slam_car::stm_to_pc>("odomtry_from_stm", 1000);
     sub_set_motor = nh.subscribe("stm_motor", 100, &Serial_Asio::set_motor_callback, this);
     sp_api->start_read_serial_thread();
+}
+
+Serial_Asio::~Serial_Asio()
+{
+    // 意外退出时，机器人速度置为0
+    sp_api->set_zero_velocity_to_stm();
+
+    // 手动删除指针变量!
+    delete sp_api;
 }
 
 //Spin function

@@ -164,7 +164,7 @@ void Sub_Odom_Pub::callback(const slam_car::stm_to_pc &msg)
     pose_th =msg_temp.z_angle_to_pc;
     velocity_th = msg_temp.velocity_vth_to_pc;
 
-    std::cout<<KalmanFilter(velocity_th, 0.000001, 0.0001)<<std::endl;
+///    std::cout<<KalmanFilter(velocity_th, 0.000001, 0.0001)<<std::endl;
 
     // velocity
     if(!first_come_in)

@@ -44,6 +44,7 @@
 #include <tf/transform_listener.h>
 
 #include "diff_drive_api.hpp"
+#include "slam_car/pc_to_stm.h"
 
 namespace slam_car
 {
@@ -81,7 +82,7 @@ public:
   {
   }
 
-  virtual ~DiffDrivePoseControllerROS()
+  ~DiffDrivePoseControllerROS()
   {
   }
 

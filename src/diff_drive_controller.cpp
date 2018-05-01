@@ -49,7 +49,7 @@ bool DiffDrivePoseControllerROS::init()
     control_velocity_subscriber_ = nh_.subscribe("control_max_vel", 10, &DiffDrivePoseControllerROS::controlMaxVelCB,
                                                  this);
     // 发布的控制底盘的指令
-    command_velocity_publisher_ = nh_.advertise<geometry_msgs::Twist>("/stm_motor", 10);
+    command_velocity_publisher_ = nh_.advertise<slam_car::pc_to_stm>("/stm_motor", 10);
     pose_reached_publisher_ = nh_.advertise<std_msgs::Bool>("pose_reached", 10);
 
     // retrieve configuration parameters
@@ -219,13 +219,28 @@ void DiffDrivePoseControllerROS::onGoalReached()
 
 void DiffDrivePoseControllerROS::setControlOutput()
 {
-    geometry_msgs::TwistPtr cmd_vel(new geometry_msgs::Twist());
+//    geometry_msgs::TwistPtr cmd_vel(new geometry_msgs::Twist());
+    slam_car::pc_to_stm pc_to_stm_data;
     if (!pose_reached_)
     {
-        cmd_vel->linear.x = v_;
-        cmd_vel->angular.z = w_;
+//        cmd_vel->linear.x = v_;
+//        cmd_vel->angular.z = w_;
+
+        // vx:-0.4~0.4m/s
+        double temp = v_/1.0; //5.0是缩放系数
+        if(temp > 0.4)
+            pc_to_stm_data.vel_x_to_stm = 0.4;
+        else if(temp < -0.4)
+            pc_to_stm_data.vel_x_to_stm = -0.4;
+        else
+            pc_to_stm_data.vel_x_to_stm = temp;
+
+        pc_to_stm_data.vel_y_to_stm = 0.0;
+
+        //vz:-10~10rad/s
+        pc_to_stm_data.z_angle_vel_to_stm = w_*1.0;
     }
-    command_velocity_publisher_.publish(cmd_vel);
+    command_velocity_publisher_.publish(pc_to_stm_data);
 }
 
 void DiffDrivePoseControllerROS::controlMaxVelCB(const std_msgs::Float32ConstPtr msg)
@@ -274,6 +289,7 @@ int main(int argc, char** argv)
     std::string name_("diff_drive_");
     slam_car::DiffDrivePoseControllerROS controller_(nh, name_);
 
+    /** @attention 修改控制频率*/
     double spin_rate_param = 20;
     if(nh.getParam("spin_rate", spin_rate_param))
     {

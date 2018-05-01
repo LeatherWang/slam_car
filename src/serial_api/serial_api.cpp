@@ -211,12 +211,11 @@ void SerialPortAPI::set_velocity_to_stm(const float &vx, const float &vz, uchar 
     TxBufferArr[_cnt++]=flag;
     TxBufferArr[_cnt++]=0;
 
-    m_int_union.vel = (int32_t)(vx*1000.0); //vx:-0.4~0.4m/s,放大1000倍发送
+    m_int_union.vel = (int32_t)(-vx*1000.0); //vx:-0.4~0.4m/s,放大1000倍发送
     TxBufferArr[_cnt++]=m_int_union.data[0];
     TxBufferArr[_cnt++]=m_int_union.data[1];
     TxBufferArr[_cnt++]=m_int_union.data[2];
     TxBufferArr[_cnt++]=m_int_union.data[3];
-    std::cout<<m_int_union.vel<<endl;
 
     m_int_union.vel = (int32_t)(vz*1000.0); //vz:-10~10rad/s,放大1000倍发送
     TxBufferArr[_cnt++]=m_int_union.data[0];
@@ -232,6 +231,13 @@ void SerialPortAPI::set_velocity_to_stm(const float &vx, const float &vz, uchar 
     TxBufferArr[_cnt++]=sum;
 
     send_data_to_stm(TxBufferArr, _cnt);
+}
+
+// 紧急制动
+void SerialPortAPI::set_zero_velocity_to_stm()
+{
+    set_velocity_to_stm(0.0, 0.0, FlagVel);
+    set_velocity_to_stm(0.0, 0.0, FlagVel);
 }
 
 bool SerialPortAPI::send_data_to_stm(uchar *bufferArray, uchar num)

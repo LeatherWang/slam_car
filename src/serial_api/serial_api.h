@@ -52,6 +52,7 @@ public:
     ~SerialPortAPI();
     // set velocity
     void set_velocity_to_stm(const float &vx, const float &vz, uchar flag);
+    void set_zero_velocity_to_stm();
     bool is_opened(void);
     void set_receive_flag(Receive_Flag_ index);
     bool get_and_clear_receive_flag(Receive_Flag_ index);
