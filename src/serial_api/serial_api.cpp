@@ -29,6 +29,8 @@ SerialPortAPI::~SerialPortAPI()
         delete p_serial_port;
     }
 
+    //std::cout<<"<SerialPortAPI> is destruced"<<std::endl;
+
     // distory mutex
     pthread_mutex_destroy(&mutex);
 }
@@ -123,11 +125,10 @@ void SerialPortAPI::check_serial_data(uchar com_data)
         RxState = 0;
 }
 
-void SerialPortAPI::odom_raw_data_decode(uint8_t com_data)
+void SerialPortAPI::odom_raw_data_decode(uint8_t& com_data_)
 {
     static uint8_t count = 0;
     static uint8_t i = 0;
-    unsigned int x_t;
 
     static union
     {
@@ -135,11 +136,10 @@ void SerialPortAPI::odom_raw_data_decode(uint8_t com_data)
         float   ActVal[6];
     }posture;
 
+    uint8_t com_data = com_data_;
     if(count==0 && com_data==0x0D)
     {
         count++;
-        x_t = (unsigned int)count;
-        cout << x_t<<" ";
     }
     else if(count == 1 && com_data==0x0a)
     {
@@ -165,6 +165,8 @@ void SerialPortAPI::odom_raw_data_decode(uint8_t com_data)
         rotation_z = posture.ActVal[0];
         velocity_th = posture.ActVal[5];
         set_receive_flag(FlagPose);
+        count = 0;
+//        cout<<position_x<<" "<<position_y<<" "<<rotation_z<<endl;
     }
     else
         count=0;
@@ -177,12 +179,14 @@ void SerialPortAPI::odom_raw_data_decode(uint8_t com_data)
 */
 void * SerialPortAPI::read_from_serial(void *__this)
 {
+    pthread_detach(pthread_self()); //将joined线程重设置为分离线程，省去资源回收的麻烦，不使用pthread_join进行资源回收，将导致僵尸线程，占据资源不释放
     SerialPortAPI * _this =(SerialPortAPI *)__this;
     uchar buf[1];
     uchar ch;
-    while(1)
+    std::cout<<"thread start"<<endl;
+    while(!_this->is_thread_exit)
     {
-        read(*_this->p_serial_port, buffer(buf));
+        read(*_this->p_serial_port, buffer(buf)); //如果一直没接收到数据，将一直阻塞在这里
         ch=buf[0];
 
         #ifdef USE_ODOM_RAW
@@ -191,16 +195,19 @@ void * SerialPortAPI::read_from_serial(void *__this)
             _this->check_serial_data(ch);
         #endif
     }
+    std::cout<<"thread halted!"<<endl;
+    return 0;
 }
 
 void SerialPortAPI::start_read_serial_thread()
 {
     /** @todo */
+    is_thread_exit = false;
     pthread_t pth;
     pthread_create(&pth,NULL,read_from_serial,(void*)this);
 }
 
-void SerialPortAPI::set_velocity_to_stm(const float &vx, const float &vz, uchar flag)
+void SerialPortAPI::set_velocity_to_stm(const float &vx, const float &vz, Receive_Flag_ flag)
 {
     uchar _cnt=0;
     uchar i=0;
@@ -236,8 +243,9 @@ void SerialPortAPI::set_velocity_to_stm(const float &vx, const float &vz, uchar 
 // 紧急制动
 void SerialPortAPI::set_zero_velocity_to_stm()
 {
-    set_velocity_to_stm(0.0, 0.0, FlagVel);
-    set_velocity_to_stm(0.0, 0.0, FlagVel);
+    #ifndef USE_ODOM_RAW
+        set_velocity_to_stm(0.0, 0.0, FlagVel);
+    #endif
 }
 
 bool SerialPortAPI::send_data_to_stm(uchar *bufferArray, uchar num)

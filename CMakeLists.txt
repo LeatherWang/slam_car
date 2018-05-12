@@ -3,6 +3,13 @@ project(slam_car)
 
 set (CMAKE_CXX_STANDARD 11)
 
+# pkg-config support
+find_package(PkgConfig)
+pkg_check_modules(NEW_YAMLCPP yaml-cpp>=0.5)
+if(NEW_YAMLCPP_FOUND)
+add_definitions(-DHAVE_NEW_YAMLCPP)
+endif(NEW_YAMLCPP_FOUND)
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
@@ -32,19 +39,24 @@ catkin_package(
 
 
 include_directories(
-# include
+  include
   "./src"
   "./src/serial_api"
   "./src/color"
   "./src/diff_drive_api"
   "./src/math_toolkit"
+  "./src/navi_wps"
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+  "/usr/include/eigen3"
+
+  ${yaml-cpp_INCLUDE_DIRS}
 )
 
 AUX_SOURCE_DIRECTORY(./src/serial_api SRC_DIR_SERIAL_API)
 AUX_SOURCE_DIRECTORY(./src/diff_drive_api SRC_DIR_DIFF_DRIVE_API)
 AUX_SOURCE_DIRECTORY(./src/math_toolkit SRC_DIR_MATH_TOOLKIT)
+AUX_SOURCE_DIRECTORY(./src/navi_wps SRC_DIR_NAVI_WPS)
 
 ## 添加库: serial_api
 add_library(serial_api_shared SHARED
@@ -71,6 +83,14 @@ target_link_libraries(diff_drive_api_shared
     math_toolkit_shared
 )
 
+## 添加库: navi_wps
+add_library(navi_wps_shared SHARED
+    ${SRC_DIR_NAVI_WPS}
+)
+target_link_libraries(navi_wps_shared
+    ${catkin_LIBRARIES}
+    yaml-cpp
+)
 
 ## 将用到的库放在一起使用
 LIST(APPEND LINK_LIBS
@@ -104,3 +124,23 @@ target_link_libraries(diff_drive_controller
     ${catkin_LIBRARIES}
     diff_drive_api_shared
 )
+
+add_executable(camera_tf_pub ./src/camera_tf_pub.cpp )
+target_link_libraries(camera_tf_pub
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBRARIES}
+)
+
+add_executable(navi_waypoints ./src/navi_waypoints.cpp )
+target_link_libraries(navi_waypoints
+    ${catkin_LIBRARIES}
+    navi_wps_shared
+    math_toolkit_shared
+)
+
+add_executable(navi_wps_provider ./src/navi_wps_provider.cpp )
+target_link_libraries(navi_wps_provider
+    ${catkin_LIBRARIES}
+    navi_wps_shared
+)
+

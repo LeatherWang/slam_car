@@ -147,6 +147,7 @@ protected:
 
   /// constant factor determining the ratio of the rate of change in theta to the rate of change in r
   // <theta的改变速率>相对<r的改变速率>的比例
+  // 越大，则先调整角度，与目标点的角度相同(程度越大)，再运动
   double k_1_;
 
   /// constant factor applied to the heading error feedback
@@ -156,6 +157,7 @@ protected:
    * determines how fast the velocity drops when the curvature increases
    */
   double beta_;
+
   /**
    * constant factor for the curvature-based velocity rule
    * determines the sharpness of the curve: higher lambda -> bigger drop in short term, smaller in the long term

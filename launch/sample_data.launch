@@ -1,9 +1,5 @@
 <?xml version="1.0"?>
 <launch>
-	<node name="serial_asio" pkg="slam_car" type="serial_asio" 
-	output="screen" >
-	</node>
-	
 	<arg name="parameter" default="0.0"/>
 	<!-- <arg name="parameter" value="$(arg parameter)"/> -->
 	<include file="$(find usb_cam)/launch/usb_cam-test.launch">

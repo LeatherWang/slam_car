@@ -1,0 +1,16 @@
+<!--
+  Starts the provider and loads the provided way pint & trajectory list
+  -->
+  
+<launch>
+  <arg name="filename" default="$(find slam_car)/resources/navi_waypoints.yaml"/>
+  
+  <node pkg="slam_car" name="navi_wps_provider" type="navi_wps_provider">
+    <param name="filename" value="$(arg filename)"/>
+  </node>
+  
+  
+  <node pkg="slam_car" name="navi_waypoints" type="navi_waypoints">
+  </node>
+
+</launch>

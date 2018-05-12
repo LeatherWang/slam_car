@@ -60,8 +60,12 @@ Serial_Asio::Serial_Asio()
 Serial_Asio::~Serial_Asio()
 {
     // 意外退出时，机器人速度置为0
+    /** @todo */
+    sp_api->is_thread_exit = true;
+    usleep(100000);
     sp_api->set_zero_velocity_to_stm();
-
+    usleep(100000);
+std::cout<<"<Serial_Asio> is destruced"<<std::endl;
     // 手动删除指针变量!
     delete sp_api;
 }
@@ -97,7 +101,7 @@ void Serial_Asio::handle_receive_serial_data()
 void Serial_Asio::set_motor_callback(const slam_car::pc_to_stm &msg)
 {
     slam_car::pc_to_stm msg_temp = msg;
-    std::cout<<msg_temp.vel_x_to_stm<<" "<<msg_temp.z_angle_vel_to_stm<<std::endl;
+    std::cout<<"send vel: "<<msg_temp.vel_x_to_stm<<" "<<msg_temp.z_angle_vel_to_stm<<std::endl;
     sp_api->set_velocity_to_stm(msg_temp.vel_x_to_stm, msg_temp.z_angle_vel_to_stm, FlagVel);
 }
 

@@ -51,7 +51,7 @@ public:
     SerialPortAPI(const string &port_name);
     ~SerialPortAPI();
     // set velocity
-    void set_velocity_to_stm(const float &vx, const float &vz, uchar flag);
+    void set_velocity_to_stm(const float &vx, const float &vz, Receive_Flag_ flag);
     void set_zero_velocity_to_stm();
     bool is_opened(void);
     void set_receive_flag(Receive_Flag_ index);
@@ -70,11 +70,12 @@ private:
     bool send_data_to_stm(uchar *bufferArray, uchar num);
     // read serial data
     static void *read_from_serial(void *__this);
-    void odom_raw_data_decode(uint8_t com_data);
+    void odom_raw_data_decode(uint8_t &com_data_);
 
 public:
     float position_x, position_y, rotation_z, velocity_th;
     bool is_pos_recvived[FLAG_SIZE]; //接收标志
+    bool is_thread_exit;
 
 private:
     io_service m_iosev;
