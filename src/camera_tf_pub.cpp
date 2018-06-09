@@ -101,7 +101,7 @@ int main ( int argc, char** argv )
     //【2】: 欧拉角
     Eigen::Vector3d c_euler_zyx_;
     // 定义<机体坐标系旋转>
-    c_euler_zyx_ << -M_PI/2 , 0,  -M_PI/2; //ZYX
+    c_euler_zyx_ << M_PI/2 , M_PI/2,  -M_PI/2; //ZYX
 
     Eigen::Vector3d w_euler_xyz_;
     // <机体坐标系旋转>转换到<世界坐标系的旋转>
@@ -115,6 +115,17 @@ int main ( int argc, char** argv )
     //【3】: 欧拉角-->>旋转矩阵
     rotation_matrix = eulerAnglesToRotationMatrix(w_euler_xyz_);
 
+//ds1-extrinc
+//    Eigen::Matrix3d Ric, Rbi;
+//    Ric << -0.006585518610541,   0.999854268284434,  -0.015750337711632,
+//                  0.999635959715315,   0.006994564282106,   0.026058091153127,
+//                  0.026164460412388,  -0.015572997909963,  -0.999536343885216;
+//    Rbi << -0.056124481777875,   0.066089747039460,  -0.996234002572400,
+//            -0.012596592290069,  -0.997774221731664,  -0.065482274780669,
+//            -0.998344313555120,   0.008873994818207,   0.056832066724022;
+//    rotation_matrix = Rbi * Ric;
+
+
     //【3-1】: 旋转向量-->>旋转矩阵
     //rotation_matrix = rotation_vector.matrix();
 
@@ -122,6 +133,11 @@ int main ( int argc, char** argv )
             rotation_matrix(0,0), rotation_matrix(0,1), rotation_matrix(0,2),
             rotation_matrix(1,0), rotation_matrix(1,1), rotation_matrix(1,2),
             rotation_matrix(2,0), rotation_matrix(2,1), rotation_matrix(2,2));
+//    Rbc = (cv::Mat_<double>(3,3) <<
+//           0.998841, -0.040223 , 0.026452,
+//          -0.0148169 , 0.265937,  0.963877,
+//          -0.0458046 ,-0.963151 , 0.265032);
+    cout<<"rotation matrix ="<<Rbc<<endl;
     cv::Mat rotation_Mat_vector;
 
     //【4】: 旋转矩阵-->>旋转向量
@@ -129,9 +145,29 @@ int main ( int argc, char** argv )
     cout<<"rotation vector ="<<rotation_Mat_vector.t()<<endl<<endl;
 
     //【4-1】: 自定义旋转向量
-    //rotation_Mat_vector = (cv::Mat_<double>(3,1) <<-1.5991179,0.021706386, -0.0047057173);
-    //【5】: 旋转向量-->>旋转矩阵
-    cv::Rodrigues(rotation_Mat_vector, Rbc);
+    if(argc==4)
+    {
+        cv::Mat Rcd,Rdb=Rbc;
+        std::stringstream para_stream;
+        Eigen::Vector3d rotation_vector_temp;
+        para_stream<<argv[1]<<" "<<argv[2]<<" "<<argv[3];
+        para_stream>>rotation_vector_temp(0)>>rotation_vector_temp(1)>>rotation_vector_temp(2);
+        // 2.107961630209229 2.135572554932028 -0.1516360053404375
+        rotation_Mat_vector = (cv::Mat_<double>(3,1) <<rotation_vector_temp(0),rotation_vector_temp(1),rotation_vector_temp(2));
+        std::cout<<"rotation_vector_temp: "<<rotation_vector_temp<<std::endl;
+        cv::Rodrigues(rotation_Mat_vector, Rcd);
+        Rbc = (Rcd*Rdb).t();
+
+        //-1.02701024274365, 1.018448485607195, -1.318042471155976
+        cv::Rodrigues(Rbc, rotation_Mat_vector);
+        cout<<"相机到里程计的rotation vector ="<<rotation_Mat_vector.t()<<endl<<endl;
+    }
+    else
+    {
+        //【5】: 旋转向量-->>旋转矩阵
+        rotation_Mat_vector = (cv::Mat_<double>(3,1) <<-1.3057116,  0.02608869, 0.028288525);
+        cv::Rodrigues(rotation_Mat_vector, Rbc);
+    }
 
     //【6】: 旋转矩阵-->>欧拉角
     // 这里的旋转矩阵的公式为: Rz*Ry*Rx
@@ -154,9 +190,9 @@ int main ( int argc, char** argv )
 
         // update transform
         camera_trans.header.stamp = ros::Time::now();
-        camera_trans.transform.translation.x = 0.13;
+        camera_trans.transform.translation.x = 0.0;
         camera_trans.transform.translation.y = 0;
-        camera_trans.transform.translation.z = 0.5;
+        camera_trans.transform.translation.z = 0.0;
 
         // param roll The roll about the X axis
         // param pitch The pitch about the Y axis
@@ -166,7 +202,7 @@ int main ( int argc, char** argv )
         // 按照世界坐标系是: X-Y-Z顺序，及RPY，(一般不使用，太绕了)
         /// 在描述统一姿态时，二者的是<等价的>，即<角度值是相等的>
         camera_trans.transform.rotation = //
-                tf::createQuaternionMsgFromRollPitchYaw(c_euler_zyx_[2],c_euler_zyx_[1],c_euler_zyx_[0]);
+                tf::createQuaternionMsgFromRollPitchYaw(euler_xyz[0],euler_xyz[1],euler_xyz[2]);
 
         broadcaster.sendTransform(camera_trans);
         ros::spinOnce();

@@ -3,20 +3,20 @@ waypoints:
     frame_id: map
     pose:
       position:
-        x: 2.0
+        x: 5.0
         y: 0
         z: 0
       orientation:
         x: 0
         y: 0
-        z: 0.0058215520938
-        w: 0.999983054622
+        z: 0.00
+        w: 1.0
   - name: site2
     frame_id: map
     pose:
       position:
-        x: 3
-        y: 0.5
+        x: 6
+        y: 1
         z: 0
       orientation:
         x: 0
@@ -27,8 +27,8 @@ waypoints:
     frame_id: map
     pose:
       position:
-        x: 4.0
-        y: 1.5
+        x: 7.0
+        y: 2.0
         z: 0
       orientation:
         x: 0
@@ -39,125 +39,102 @@ waypoints:
     frame_id: map
     pose:
       position:
-        x: 3
-        y: 2.5
-        z: 0
-      orientation:
-        x: 0
-        y: 0
-        z: 0.954557945854
-        w: 0.298025381482
-  - name: site5
-    frame_id: map
-    pose:
-      position:
-        x: 2.0
+        x: 6
         y: 3.0
         z: 0
       orientation:
         x: 0
         y: 0
-        z: 0.999983938498
-        w: 0.00566769314923
+        z: 0.91762652938
+        w: 0.39744377285
+  - name: site5
+    frame_id: map
+    pose:
+      position:
+        x: 3.0
+        y: 5.0
+        z: 0
+      orientation:
+        x: 0
+        y: 0
+        z: 1.0
+        w: 0.0
   - name: site6
     frame_id: map
     pose:
       position:
-        x: 1.0
-        y: 2.5
+        x: 2.0
+        y: 5.0
         z: 0
       orientation:
         x: 0
         y: 0
-        z: 0.938865796085
-        w: -0.344283338169
+        z: 1.0
+        w: 0.0
   - name: site7
     frame_id: map
     pose:
       position:
-        x: 0.0
-        y: 1.5
+        x: 1.0
+        y: 4.0
         z: 0
       orientation:
         x: 0
         y: 0
-        z: -0.70469097726
-        w: 0.709514359663
+        z: 0.915334703327
+        w: -0.402693904703
   - name: site8
     frame_id: map
     pose:
       position:
-        x: 1.0
-        y: 0.5
+        x: 0.0
+        y: 3.0
         z: 0
       orientation:
         x: 0
         y: 0
-        z: -0.346466097133
-        w: 0.938062494473
-  - name: axid1
+        z: -0.704770237996
+        w: 0.709435628958
+  - name: site9
+    frame_id: map
+    pose:
+      position:
+        x: 0.0
+        y: 2.0
+        z: 0
+      orientation:
+        x: 0
+        y: 0
+        z: -0.704770237996
+        w: 0.709435628958   
+  - name: site10
+    frame_id: map
+    pose:
+      position:
+        x: 1.0
+        y: 1.0
+        z: 0
+      orientation:
+        x: 0
+        y: 0
+        z: -0.375293035465
+        w: 0.926906218304
+  - name: site11
     frame_id: map
     pose:
       position:
         x: 2.0
-        y: 0.5
+        y: 0.0
         z: 0
       orientation:
         x: 0
         y: 0
-        z: 0.0799499901408
-        w: 0.996798875941       
-  - name: axid2
-    frame_id: map
-    pose:
-      position:
-        x: 1.0
-        y: 0.5
-        z: 0
-      orientation:
-        x: 0
-        y: 0
-        z: 0.234698069529
-        w: 0.972068318669
-  - name: axid3
-    frame_id: map
-    pose:
-      position:
-        x: 1.0
-        y: 0.5
-        z: 0
-      orientation:
-        x: 0
-        y: 0
-        z: -0.346466097133
-        w: 0.938062494473
-  - name: axid4
-    frame_id: map
-    pose:
-      position:
-        x: 1.0
-        y: 0.5
-        z: 0
-      orientation:
-        x: 0
-        y: 0
-        z: -0.346466097133
-        w: 0.938062494473
-  - name: axid5
-    frame_id: map
-    pose:
-      position:
-        x: 1.0
-        y: 0.5
-        z: 0
-      orientation:
-        x: 0
-        y: 0
-        z: -0.346466097133
-        w: 0.938062494473
+        z: 0.0
+        w: 1.0
 trajectories:
   - name: wps_oval
     waypoints:
+    - site0
     - site1
     - site2
     - site3
@@ -166,11 +143,8 @@ trajectories:
     - site6
     - site7
     - site8
-    - site1
-  - name: wps_oxid
-    waypoints:
-    - site1
-    - site2
-    - site3
-    - site4
+    - site9
+    - site10
+    - site11
+
 

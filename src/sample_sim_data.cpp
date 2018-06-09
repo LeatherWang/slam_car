@@ -3,7 +3,6 @@
 #include <nav_msgs/Odometry.h>
 #include <math.h>
 #include <string>
-#include "slam_car/stm_to_pc.h"
 #include "std_msgs/String.h"
 #include "std_msgs/Int64.h"
 #include <cv_bridge/cv_bridge.h>
@@ -19,7 +18,8 @@
 
 #include <stdio.h>
 #include "remove_file.h"
-//using namespace std;
+#include <Eigen/Core>
+#include <Eigen/Geometry> // Eigen 几何模块
 
 template<class T>
 std::string toString(const T &value) {
@@ -41,10 +41,10 @@ private:
 
     typedef message_filters::sync_policies::ApproximateTime<
       sensor_msgs::Image,
-      slam_car::stm_to_pc> ImagesSyncPolicy;
+      nav_msgs::Odometry> ImagesSyncPolicy;
 
     message_filters::Subscriber<sensor_msgs::Image>  *image_for_sync_sub_;
-    message_filters::Subscriber<slam_car::stm_to_pc> *odom_for_sync_sub_;
+    message_filters::Subscriber<nav_msgs::Odometry> *odom_for_sync_sub_;
     message_filters::Synchronizer<ImagesSyncPolicy> *sync_;
 
     const static int rate = 200; /** @attention */
@@ -60,7 +60,7 @@ private:
 
     ros::Time start_sample_time;
 
-    void sync_callback(const sensor_msgs::ImageConstPtr& image_msg, const slam_car::stm_to_pcConstPtr& odom_msg);
+    void sync_callback(const sensor_msgs::ImageConstPtr& image_msg, const nav_msgs::OdometryConstPtr &odom_msg);
 };
 
 Sample_Data::Sample_Data()
@@ -70,7 +70,7 @@ Sample_Data::Sample_Data()
     velocity_th = 0.0;
 
     // 确定存储文件的路径
-    strFolderPathMain = "/home/jiga/jiga_temp/data";//home/leather/leather_temp/data
+    strFolderPathMain = "/home/leather/leather_temp/data";
     n.param<std::string>( "DataPath", strFolderPathMain, strFolderPathMain );
     if(strFolderPathMain.empty())
     {
@@ -95,8 +95,8 @@ Sample_Data::Sample_Data()
     write_odom_file<<"# format: lp timeOdo timeCam x y theta"<<"\n";
 
     // 时间同步
-    image_for_sync_sub_ = new message_filters::Subscriber<sensor_msgs::Image>(n, "/usb_cam/image_raw", 1);
-    odom_for_sync_sub_ = new message_filters::Subscriber<slam_car::stm_to_pc>(n, "/odomtry_from_stm", 1);
+    image_for_sync_sub_ = new message_filters::Subscriber<sensor_msgs::Image>(n, "/camera/rgb/image_raw", 1);
+    odom_for_sync_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(n, "/odom", 1);
     sync_ = new message_filters::Synchronizer<ImagesSyncPolicy>(ImagesSyncPolicy(10),*image_for_sync_sub_, *odom_for_sync_sub_);
     sync_->registerCallback(boost::bind(&Sample_Data::sync_callback, this, _1, _2));
 
@@ -115,7 +115,7 @@ Sample_Data::~Sample_Data()
     delete sync_;
 }
 
-void Sample_Data::sync_callback(const sensor_msgs::ImageConstPtr& image_msg, const slam_car::stm_to_pcConstPtr &odom_msg)
+void Sample_Data::sync_callback(const sensor_msgs::ImageConstPtr& image_msg, const nav_msgs::OdometryConstPtr &odom_msg)
 {
     // Solve all of perception here...
     static unsigned int comein_counter=0;
@@ -126,13 +126,28 @@ void Sample_Data::sync_callback(const sensor_msgs::ImageConstPtr& image_msg, con
     cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvShare(image_msg, sensor_msgs::image_encodings::MONO8);
 
     cv::Mat image = cv_ptr->image;
+    geometry_msgs::Quaternion odom_quat;
+    odom_quat = odom_msg->pose.pose.orientation;
+
+    Eigen::Quaterniond q;
+    q.x() = odom_quat.x;
+    q.y() = odom_quat.y;
+    q.z() = odom_quat.z;
+    q.w() = odom_quat.w;
+
+    Eigen::Vector3d euler = q.toRotationMatrix().eulerAngles(2, 1, 0);
+    std::cout << "Quaterniond2Euler result is:";
+    std::cout << " x = "<< euler[2]  ;
+    std::cout << " y = "<< euler[1]  ;
+    std::cout << " z = "<< euler[0] << std::endl;
+
 
     write_odom_file<<comein_counter<<" "<<
                      (odom_msg->header.stamp-start_sample_time).toSec()<<" "<<
                      (image_msg->header.stamp-start_sample_time).toSec()<<" "<<
-                     odom_msg->coord_x_to_pc*1000.0<<" "<<
-                     odom_msg->coord_y_to_pc*1000.0<<" "<< //单位转换为:mm
-                     odom_msg->z_angle_to_pc<<"\n";
+                     odom_msg->pose.pose.position.x*1000.0<<" "<<
+                     odom_msg->pose.pose.position.y*1000.0<<" "<< //单位转换为:mm
+                     euler[0]<<"\n";
 
     /** @todo 测试时间，决定是否放到线程里去做*/
     ros::Time time_before = ros::Time::now();

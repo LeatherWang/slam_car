@@ -3,7 +3,7 @@
 <launch>
   
   <node pkg="slam_car" type="diff_drive_controller" name="diff_drive_controller" 
-  >
+  output="screen">
     <param name="spin_rate" value="25"/>
     <param name="start_enabled" value="false"/>
     <param name="base_frame_name" value="base_footprint"/>

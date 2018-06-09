@@ -3,21 +3,21 @@
 
 	<!-- serial -->
 	<node name="serial_asio" pkg="slam_car" type="serial_asio" 
-	output="screen" >
+	>
 	</node>
 	
 	<!-- public odometry message and tf -->
 	<node name="odom_tf_pub" pkg="slam_car" type="odom_tf_pub" 
-	output="screen" >
+	>
 	</node>
 	
 	<!-- base controller and tf -->
 	<node name="base_controller" pkg="slam_car" type="base_controller" 
-	output="screen" launch-prefix="xterm -e">
+	output="screen">
 	</node>
 	
 	<!-- diff drive controller -->
-	<include file="$(find slam_car)/launch/diff_drive_controller.launch">
+	<include file="$(find slam_car)/launch/slave_diff_drive_controller.launch">
 	</include>
 	
 	

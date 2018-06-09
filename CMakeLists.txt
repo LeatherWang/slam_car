@@ -119,6 +119,12 @@ target_link_libraries(sample_data
     ${OpenCV_LIBRARIES}
 )
 
+add_executable(sample_sim_data ./src/sample_sim_data.cpp )
+target_link_libraries(sample_sim_data
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBRARIES}
+)
+
 add_executable(diff_drive_controller ./src/diff_drive_controller.cpp )
 target_link_libraries(diff_drive_controller
     ${catkin_LIBRARIES}
@@ -144,3 +150,7 @@ target_link_libraries(navi_wps_provider
     navi_wps_shared
 )
 
+add_executable(ds_sync ./src/ds_sync.cpp )
+target_link_libraries(ds_sync
+    ${catkin_LIBRARIES}
+)
