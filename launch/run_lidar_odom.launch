@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<launch>
+
+<!-- 【1】夹在urdf模型文件，发布static_tf -->
+<!-- <include file="$(find slam_car)/launch/rviz_display.launch" />
+-->
+<!-- 【2】运行rplidar，发布/scan -->
+<include file="$(find slam_car)/launch/rplidar.launch" />
+
+<!-- 【3】运行底盘车，发布/odom -->
+	<!-- serial -->
+	<node name="serial_asio" pkg="slam_car" type="serial_asio" 
+	output="screen" >
+	</node>
+	
+	<!-- public odometry message and tf -->
+	<node name="odom_tf_pub" pkg="slam_car" type="odom_tf_pub" 
+	output="screen" >
+	</node>
+	
+	<!-- base controller and tf -->
+	<node name="base_controller" pkg="slam_car" type="base_controller" 
+	output="screen">
+	</node>
+	
+<!-- 【4】运行gmapping -->
+<!-- <include file="$(find slam_car)/launch/gmapping.launch" />
+-->
+</launch>

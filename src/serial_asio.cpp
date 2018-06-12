@@ -34,11 +34,11 @@ private:
 
 Serial_Asio::Serial_Asio()
 {
-    std::string serial_dev="/dev/ttyUSB0";
+    std::string serial_dev="/dev/blue";
 
     /** @todo*/
     ros::NodeHandle n_private("~");
-    n_private.param<std::string>("serial_dev", serial_dev, "/dev/ttyUSB0");
+    n_private.param<std::string>("serial_dev", serial_dev, "/dev/blue");
     try
     {
         sp_api = new SerialPortAPI(serial_dev);

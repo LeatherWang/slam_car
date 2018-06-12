@@ -1,0 +1,9 @@
+obstacle_range: 2.5 
+raytrace_range: 3.0 
+#footprint: [[-0.2,-0.2],[-0.2,0.2], [0.2, 0.2], [0.2,-0.2]]
+robot_radius: 0.347
+inflation_radius: 0.35
+cost_scaling_factor: 5.0
+observation_sources: scan
+scan: {sensor_frame: rplidar_link, data_type: LaserScan, topic: /scan, marking: true, clearing: true}
+

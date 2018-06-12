@@ -42,7 +42,7 @@ Base_Control::Base_Control()
     pub_motor = n.advertise<slam_car::pc_to_stm>("stm_motor",100);
     sub_web_server = n.subscribe("web_server_cmd", 1000, &Base_Control::webserver_callback,this);
     sub_cmd_vel = n.subscribe("cmd_vel", 1000, &Base_Control::cmdvel_callback,this);
-    nav_goal_sub = n.subscribe("move_base_simple/goal",10, &Base_Control::nav_velCallback, this);
+    //nav_goal_sub = n.subscribe("move_base_simple/goal",10, &Base_Control::nav_velCallback, this);
 }
 
 void Base_Control::init_variables()
@@ -60,7 +60,7 @@ void Base_Control::spin()
         ros::spinOnce();
 
         // 发布tf转换树: base_goal_pose
-        geometry_msgs::TransformStamped odom_trans;
+   /*     geometry_msgs::TransformStamped odom_trans;
         odom_trans.header.frame_id = "odom";
         odom_trans.child_frame_id = "base_goal_pose";
 
@@ -71,7 +71,7 @@ void Base_Control::spin()
         odom_trans.transform.rotation = tf::createQuaternionMsgFromYaw(goal_angle);
 
         broadcaster.sendTransform(odom_trans);
-
+*/
         loop_rate.sleep();
     }
 }
@@ -89,7 +89,7 @@ void Base_Control::cmdvel_callback(const geometry_msgs::Twist& msg)
     slam_car::pc_to_stm pc_to_stm_data;
 
     // vx:-0.4~0.4m/s
-    double temp = msg_temp.linear.x/5.0; //5.0是缩放系数
+    double temp = msg_temp.linear.x/1.0; //5.0是缩放系数
     if(temp > 0.4)
         pc_to_stm_data.vel_x_to_stm = 0.4;
     else if(temp < -0.4)
@@ -100,7 +100,7 @@ void Base_Control::cmdvel_callback(const geometry_msgs::Twist& msg)
     pc_to_stm_data.vel_y_to_stm = 0.0;
 
     //vz:-10~10rad/s
-    pc_to_stm_data.z_angle_vel_to_stm = msg_temp.angular.z*2.0; //2.0是缩放系数
+    pc_to_stm_data.z_angle_vel_to_stm = msg_temp.angular.z*1.0; //2.0是缩放系数
 
     pub_motor.publish(pc_to_stm_data);
 }

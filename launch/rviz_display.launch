@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <launch>
-	<arg name="model" default="$(find slam_car)/urdf/robot1_base_01_cam.urdf" />
-	<arg name="gui" default="False" />
-	<param name="robot_description" textfile="$(arg model)" />
+	<arg name="model" default="$(find slam_car)/urdf/robot1_base_01_cam.xacro" />
+	<arg name="gui" default="false" />
+	<param name="/use_sim_time" value="false" />
+	<param name="robot_description" command="$(find xacro)/xacro.py $(arg model)" /> <!-- 生成.urdf文件 -->
 	<param name="use_gui" value="$(arg gui)"/>
 	
 	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" ></node>
@@ -11,5 +12,5 @@
 		<param name="publish_frequency" type="double" value="20.0"/>
 	</node>
 	
-	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find slam_car)/urdf/urdf.rviz" />
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find slam_car)/urdf/navigation.rviz" />
 </launch>
