@@ -1,5 +1,3 @@
-# ros-serial-asio-pthreads
-This repository is a ros serial demo based on boost asio and pthreads.
 
 # run command
 Sample data from wheel encoder and camera by the node `sample_data` automaticly and in order to move the robot you should set the next goal by using the tool `2D Nav Goal` in rviz.
