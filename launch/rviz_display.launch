@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-	<arg name="model" default="$(find slam_car)/urdf/robot1_base_01_cam.xacro" />
+	<arg name="model" default="$(find slam_car)/urdf/robot1_base_01_cam.xacro" /> <!-- -->
 	<arg name="gui" default="false" />
 	<param name="/use_sim_time" value="false" />
 	<param name="robot_description" command="$(find xacro)/xacro.py $(arg model)" /> <!-- 生成.urdf文件 -->

@@ -2,18 +2,9 @@
 
 <launch>
 
-  <param name="/use_sim_time" value="false" />
+  <include file="$(find turtlebot_navigation)/launch/includes/velocity_smoother.launch.xml"/>
+  <include file="$(find turtlebot_navigation)/launch/includes/safety_controller.launch.xml"/>
   
-  <!-- Run the map server -->
-   <node name="map_server" pkg="map_server" type="map_server" args="$(find slam_car)/maps/map.yaml" output="screen"/>
-
-  <!-- Run amcl_diff -->
-  <include file="$(find slam_car)/launch/includes/amcl_diff.launch" >
-  </include>
-
-  <!-- Run move_base -->
-  <!--<include file="$(find slam_car)/launch/includes/move_base.launch.xml" >
-  </include>-->
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <param name="controller_frequency" value="10.0"/>
     <param name="controller_patiente" value="15.0"/>
@@ -22,6 +13,9 @@
     <rosparam file="$(find slam_car)/launch/param/local_costmap_params.yaml" command="load" />
     <rosparam file="$(find slam_car)/launch/param/global_costmap_params.yaml" command="load" />
     <rosparam file="$(find slam_car)/launch/param/base_local_planner_params.yaml" command="load" />
+    
+    <remap from="cmd_vel" to="navigation_velocity_smoother/raw_cmd_vel"/>
   </node>
+
 
 </launch>

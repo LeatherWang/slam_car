@@ -28,15 +28,15 @@ obstacle_layer:
     topic: scan
     marking: true
     clearing: true
-    min_obstacle_height: -49
-    max_obstacle_height: -50
+    min_obstacle_height: 49
+    max_obstacle_height: 50
   bump:
     data_type: PointCloud2
     topic: mobile_base/sensors/bumper_pointcloud
     marking: true
     clearing: false
-    min_obstacle_height: -49
-    max_obstacle_height: -50
+    min_obstacle_height: 49
+    max_obstacle_height: 50
   # for debugging only, let's you see the entire voxel grid
 
 #cost_scaling_factor and inflation_radius were now moved to the inflation_layer ns

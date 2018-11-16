@@ -6,25 +6,25 @@ TrajectoryPlannerROS:
   min_vel_y: 0.0
   max_vel_y: 0.0
   max_vel_theta: 0.6
-  min_in_place_vel_theta: 0.1 
-  #min_vel_theta: -0.6
-  #max_rotational_vel: 0.6 #最大旋转速度
-  #min_in_place_rotational_vel: 0.1
-  #escape_vel: -0.15
+  min_in_place_vel_theta: 0.1
+  min_vel_theta: -0.6
+  max_rotational_vel: 1.0 #最大旋转速度
+  min_in_place_rotational_vel: 0.4
+  escape_vel: -0.2
   
   acc_lim_theta: 0.8 
   acc_lim_x: 0.5
   acc_lim_y: 0.0
   
-  yaw_goal_tolerance: 0.5 #30 degrees
-  xy_goal_tolerance: 0.15 #15cm
+  yaw_goal_tolerance: 3.14 #30 degrees
+  xy_goal_tolerance: 0.4 #15cm
   #latch_xy_goal_tolerance: false #default: false
   
   pdist_scale: 0.8 #全局规划的比例
   gdist_scale: 0.4 #局部规划的比例，以全局为主，这个值越大，那么越有起步的那个大圈
-  occdist_scale: 0.1
+  occdist_scale: 0.01
   
-  sim_time: 1.0 #模拟时间
+  sim_time: 6.0 #模拟时间
   dwa: true 
   
   holonomic_robot: false

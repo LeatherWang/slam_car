@@ -133,10 +133,10 @@ int main ( int argc, char** argv )
             rotation_matrix(0,0), rotation_matrix(0,1), rotation_matrix(0,2),
             rotation_matrix(1,0), rotation_matrix(1,1), rotation_matrix(1,2),
             rotation_matrix(2,0), rotation_matrix(2,1), rotation_matrix(2,2));
-//    Rbc = (cv::Mat_<double>(3,3) <<
-//           0.998841, -0.040223 , 0.026452,
-//          -0.0148169 , 0.265937,  0.963877,
-//          -0.0458046 ,-0.963151 , 0.265032);
+    Rbc = (cv::Mat_<double>(3,3) <<
+           0.999473,  0.0243328,  0.0215027,
+           -0.0210329, -0.0194028,    0.99959,
+              0.02474,  -0.999516, -0.0188808);
     cout<<"rotation matrix ="<<Rbc<<endl;
     cv::Mat rotation_Mat_vector;
 
@@ -156,16 +156,17 @@ int main ( int argc, char** argv )
         rotation_Mat_vector = (cv::Mat_<double>(3,1) <<rotation_vector_temp(0),rotation_vector_temp(1),rotation_vector_temp(2));
         std::cout<<"rotation_vector_temp: "<<rotation_vector_temp<<std::endl;
         cv::Rodrigues(rotation_Mat_vector, Rcd);
-        Rbc = (Rcd*Rdb).t();
+        Rbc = Rcd;//(Rcd*Rdb).t();
 
         //-1.02701024274365, 1.018448485607195, -1.318042471155976
         cv::Rodrigues(Rbc, rotation_Mat_vector);
         cout<<"相机到里程计的rotation vector ="<<rotation_Mat_vector.t()<<endl<<endl;
+        cout<<"相机到里程计的rotation matrix ="<<Rbc<<endl<<endl;
     }
     else
     {
         //【5】: 旋转向量-->>旋转矩阵
-        rotation_Mat_vector = (cv::Mat_<double>(3,1) <<-1.3057116,  0.02608869, 0.028288525);
+        rotation_Mat_vector = (cv::Mat_<double>(3,1) << -1.8026415, -0.036698326, -0.073075235);
         cv::Rodrigues(rotation_Mat_vector, Rbc);
     }
 

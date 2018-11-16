@@ -188,6 +188,7 @@ void * SerialPortAPI::read_from_serial(void *__this)
     {
         read(*_this->p_serial_port, buffer(buf)); //如果一直没接收到数据，将一直阻塞在这里
         ch=buf[0];
+        //std::cout<<ch<<std::endl;
 
         #ifdef USE_ODOM_RAW
             _this->odom_raw_data_decode(ch);

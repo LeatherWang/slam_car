@@ -59,6 +59,7 @@ private:
     std::ofstream write_odom_file;
 
     ros::Time start_sample_time;
+    ros::Time last_sample_time;
 
     void sync_callback(const sensor_msgs::ImageConstPtr& image_msg, const slam_car::stm_to_pcConstPtr& odom_msg);
 };
@@ -102,6 +103,7 @@ Sample_Data::Sample_Data()
 
     // 开始采样时间戳
     start_sample_time = ros::Time::now();
+    last_sample_time = ros::Time::now();
 }
 
 Sample_Data::~Sample_Data()
@@ -123,6 +125,16 @@ void Sample_Data::sync_callback(const sensor_msgs::ImageConstPtr& image_msg, con
 //    std::cout<<"stamp: "<<image_msg->header.stamp<<" "<<odom_msg->header.stamp<<" "<<
 //          (image_msg->header.stamp - odom_msg->header.stamp).toSec()<<std::endl;
 
+    ros::Time current_time = ros::Time::now();
+    double time_goesby = (current_time-last_sample_time).toSec();
+    if(time_goesby < 0.06)
+    {
+        std::cout<<"time is too short, escape it"<<std::endl;
+        return;
+    }
+    std::cout<<time_goesby<<std::endl;
+    last_sample_time = current_time;
+
     cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvShare(image_msg, sensor_msgs::image_encodings::MONO8);
 
     cv::Mat image = cv_ptr->image;
@@ -135,11 +147,11 @@ void Sample_Data::sync_callback(const sensor_msgs::ImageConstPtr& image_msg, con
                      odom_msg->z_angle_to_pc<<"\n";
 
     /** @todo 测试时间，决定是否放到线程里去做*/
-    ros::Time time_before = ros::Time::now();
+//    ros::Time time_before = ros::Time::now();
     cv::imwrite(image_store_path+toString(comein_counter)+".png", image);
     comein_counter++;
-    if((ros::Time::now()-time_before).toSec() > 0.001)
-        std::cout<<(ros::Time::now()-time_before).toSec()<<std::endl;
+//    if((ros::Time::now()-time_before).toSec() > 0.001)
+//        std::cout<<(ros::Time::now()-time_before).toSec()<<std::endl;
 
     if(comein_counter>20000) //防止占用所有硬盘资源
         exit(-1);
