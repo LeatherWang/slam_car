@@ -9,7 +9,8 @@ namespace slam_car
 #define BYTE2(dwTemp)       ( *( (uchar *)(&dwTemp) + 2) )
 #define BYTE3(dwTemp)       ( *( (uchar *)(&dwTemp) + 3) )
 
-SerialPortAPI::SerialPortAPI(const string &port_name)
+SerialPortAPI::SerialPortAPI(const string &port_name, callback_t receive_done_cb):
+    receive_done_cb_(receive_done_cb)
 {
     p_serial_port = new serial_port(m_iosev);
     if (p_serial_port){
@@ -20,6 +21,8 @@ SerialPortAPI::SerialPortAPI(const string &port_name)
     for(uchar i=0; i<length; i++){
         this->is_pos_recvived[i] = false;
     }
+
+//    rosTL = ros::Time::now();
 }
 
 SerialPortAPI::~SerialPortAPI()
@@ -44,14 +47,22 @@ void SerialPortAPI::init_serial(const std::string &device)
     p_serial_port->set_option(serial_port::stop_bits());
     p_serial_port->set_option(serial_port::character_size(8));
 }
-
+#define ReceiveTrigger
 void SerialPortAPI::decode_serial_data(uchar *data, uchar num)
 {
+//    ros::Time curT = ros::Time::now();
+//    cout<<(rosTL- curT).toSec()<<endl;
+//    rosTL = curT;
     uchar sum = 0;
     for(uchar i=0;i<(num-1);i++)
         sum += (uchar(data[i]));
-    if(!(sum == uchar(data[num-1])))	return;
-    if(!(uchar(data[0])==0xAA && uchar(data[1])==0xAF))		return;
+    if(!(sum == uchar(data[num-1])))
+    {
+        cerr<<"check error"<<endl;
+        return;
+    }
+    if(!(uchar(data[0])==0xAA && uchar(data[1])==0xAF))
+        return;
 
     if(uchar(data[2]) == 0X01)
     {
@@ -79,7 +90,27 @@ void SerialPortAPI::decode_serial_data(uchar *data, uchar num)
         m_float_union.son[3] = uchar(data[19]);
         velocity_th = m_float_union.sum;
 
+#ifdef ReceiveTrigger
+        trigger = uchar(data[20])=='1'?true:false; //2018-12-1
+#endif
         set_receive_flag(Receive_Flag_(data[2])); //标志位,当set标志位后才可读
+        receive_done_cb_();
+    }
+    else if(uchar(data[2]) == 0X04)
+    {
+        m_int_union_wtf.data[0] = uchar(data[4]);
+        m_int_union_wtf.data[1] = uchar(data[5]);
+        m_int_union_wtf.data[2] = uchar(data[6]);
+        m_int_union_wtf.data[3] = uchar(data[7]);
+        wtf_gas = m_int_union_wtf.vel;
+        m_int_union_wtf.data[0] = uchar(data[8]);
+        m_int_union_wtf.data[1] = uchar(data[9]);
+        m_int_union_wtf.data[2] = uchar(data[10]);
+        m_int_union_wtf.data[3] = uchar(data[11]);
+        wtf_yaw = m_int_union_wtf.vel;
+
+        set_receive_flag(Receive_Flag_(data[2]));
+        receive_done_cb_();
     }
 }
 
@@ -165,6 +196,7 @@ void SerialPortAPI::odom_raw_data_decode(uint8_t& com_data_)
         rotation_z = posture.ActVal[0];
         velocity_th = posture.ActVal[5];
         set_receive_flag(FlagPose);
+
         count = 0;
 //        cout<<position_x<<" "<<position_y<<" "<<rotation_z<<endl;
     }
@@ -181,7 +213,7 @@ void * SerialPortAPI::read_from_serial(void *__this)
 {
     pthread_detach(pthread_self()); //将joined线程重设置为分离线程，省去资源回收的麻烦，不使用pthread_join进行资源回收，将导致僵尸线程，占据资源不释放
     SerialPortAPI * _this =(SerialPortAPI *)__this;
-    uchar buf[1];
+    uchar buf[1]; //21
     uchar ch;
     std::cout<<"thread start"<<endl;
     while(!_this->is_thread_exit)
@@ -198,6 +230,7 @@ void * SerialPortAPI::read_from_serial(void *__this)
     }
     std::cout<<"thread halted!"<<endl;
     return 0;
+
 }
 
 void SerialPortAPI::start_read_serial_thread()
@@ -230,6 +263,29 @@ void SerialPortAPI::set_velocity_to_stm(const float &vx, const float &vz, Receiv
     TxBufferArr[_cnt++]=m_int_union.data[1];
     TxBufferArr[_cnt++]=m_int_union.data[2];
     TxBufferArr[_cnt++]=m_int_union.data[3];
+
+    TxBufferArr[3] = _cnt-4;
+
+    for(i=0;i<_cnt;i++)
+        sum += TxBufferArr[i];
+
+    TxBufferArr[_cnt++]=sum;
+
+    send_data_to_stm(TxBufferArr, _cnt);
+}
+
+void SerialPortAPI::set_trigger_to_stm(const uchar &trigger_, Receive_Flag_ flag)
+{
+    uchar _cnt=0;
+    uchar i=0;
+    uchar sum = 0;
+
+    TxBufferArr[_cnt++]=0xAA;
+    TxBufferArr[_cnt++]=0xAF;
+    TxBufferArr[_cnt++]=flag;
+    TxBufferArr[_cnt++]=0;
+
+    TxBufferArr[_cnt++]=trigger_;
 
     TxBufferArr[3] = _cnt-4;
 

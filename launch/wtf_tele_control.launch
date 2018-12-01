@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- serial -->
+	<node name="serial_asio" pkg="slam_car" type="serial_asio" 
+	>
+	</node>
+	
+	<!-- public odometry message and tf -->
+	<node name="odom_tf_pub" pkg="slam_car" type="odom_tf_pub" 
+	>
+	</node>
+	
+	<!-- base controller and tf -->
+	<node name="wtf_tele_recv" pkg="slam_car" type="wtf_tele_recv" 
+	output="screen">
+	</node>
+	
+	
+</launch>

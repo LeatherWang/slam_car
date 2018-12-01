@@ -134,9 +134,9 @@ int main ( int argc, char** argv )
             rotation_matrix(1,0), rotation_matrix(1,1), rotation_matrix(1,2),
             rotation_matrix(2,0), rotation_matrix(2,1), rotation_matrix(2,2));
     Rbc = (cv::Mat_<double>(3,3) <<
-           0.999473,  0.0243328,  0.0215027,
-           -0.0210329, -0.0194028,    0.99959,
-              0.02474,  -0.999516, -0.0188808);
+           -0.9974712,  -0.06164149,  0.03537705,
+            -0.03369334, -0.02814342, -0.99903589,
+             0.06257769, -0.9977015,   0.02599534);
     cout<<"rotation matrix ="<<Rbc<<endl;
     cv::Mat rotation_Mat_vector;
 
@@ -166,7 +166,7 @@ int main ( int argc, char** argv )
     else
     {
         //【5】: 旋转向量-->>旋转矩阵
-        rotation_Mat_vector = (cv::Mat_<double>(3,1) << -1.8026415, -0.036698326, -0.073075235);
+        //rotation_Mat_vector = (cv::Mat_<double>(3,1) << -1.8026415, -0.036698326, -0.073075235);
         cv::Rodrigues(rotation_Mat_vector, Rbc);
     }
 

@@ -11,10 +11,13 @@
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <boost/function.hpp>
 #include <string>
 #include <math.h>
 #include <stdio.h>
 #include <iostream>
+#include <time.h>
+#include <ros/ros.h>
 
 using namespace std;
 using namespace boost::asio;
@@ -28,8 +31,8 @@ typedef enum{
     FlagVel=0,
     FlagPose,
     FlagCmd, //串口助手使用
-    Temp2,
-    Temp3
+    FlagTrigger,
+    FlagWTF //天地飞遥控
 } Receive_Flag_;
 
 typedef union{
@@ -48,10 +51,13 @@ namespace slam_car
 class SerialPortAPI
 {
 public:
-    SerialPortAPI(const string &port_name);
+    typedef boost::function<void()> callback_t;
+
+    SerialPortAPI(const string &port_name, callback_t receive_done_cb);
     ~SerialPortAPI();
     // set velocity
     void set_velocity_to_stm(const float &vx, const float &vz, Receive_Flag_ flag);
+    void set_trigger_to_stm(const uchar &trigger_, Receive_Flag_ flag);
     void set_zero_velocity_to_stm();
     bool is_opened(void);
     void set_receive_flag(Receive_Flag_ index);
@@ -74,6 +80,8 @@ private:
 
 public:
     float position_x, position_y, rotation_z, velocity_th;
+    int wtf_gas, wtf_yaw;
+    bool trigger;
     bool is_pos_recvived[FLAG_SIZE]; //接收标志
     bool is_thread_exit;
 
@@ -81,10 +89,13 @@ private:
     io_service m_iosev;
     serial_port *p_serial_port;
     UnionFloat_ m_float_union;
-    UnionInt_ m_int_union;
+    UnionInt_ m_int_union, m_int_union_wtf;
     uchar RxState;
     uchar RxBufferArr[256];
     uchar TxBufferArr[50];
+    callback_t receive_done_cb_;
+
+//    ros::Time rosTL;
 
     pthread_mutex_t mutex;
 };

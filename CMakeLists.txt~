@@ -161,9 +161,3 @@ add_executable(ds_sync ./src/ds_sync.cpp )
 target_link_libraries(ds_sync
     ${catkin_LIBRARIES}
 )
-
-add_executable(wtf_tele_recv ./src/wtf_tele_recv.cpp )
-target_link_libraries(wtf_tele_recv
-    ${LINK_LIBS}
-)
-
